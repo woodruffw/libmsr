@@ -33,7 +33,7 @@ mak_cmd(int fd, uint8_t c, uint8_t tracks)
 int mak_reset(int fd)
 {
 	int r;
-	int i;
+	/*int i;*/
 	char buf[strlen(MAK_RESET_RESP) + 1];
 	memset(buf, 0, strlen(MAK_RESET_RESP));
 	buf[0] = MAK_RESET_CMD;
@@ -48,7 +48,7 @@ int mak_reset(int fd)
 	return r;
 }
 
-int mak_flush(fd)
+int mak_flush(int fd)
 {
 	int r;
 	char buf[1];
@@ -86,7 +86,7 @@ mak_read(int fd, uint8_t tracks)
 	/* 'RD '<16bits of length data><data samples> */
 	msr_serial_read(fd, buf, 3);
 	printf("We expect: %s\n", MAKSTRIPE_READ_BUF_PREFIX);
-	printf("We expect it to be of len: %d\n", strlen(MAKSTRIPE_READ_BUF_PREFIX));
+	printf("We expect it to be of len: %zd\n", strlen(MAKSTRIPE_READ_BUF_PREFIX));
 	printf("We got: %s\n", buf);
 	r = memcmp(buf, MAKSTRIPE_READ_BUF_PREFIX, strlen(MAKSTRIPE_READ_BUF_PREFIX));
 	if (r != 0) {
@@ -180,7 +180,7 @@ mak_clone(int fd)
 	/* Read the response and make sure it matches MAKSTRIPE_CLONE_STS_OK */
 	c = msr_serial_read(fd, buf, strlen(MAKSTRIPE_CLONE_STS_OK));
 	if (memcmp(buf, MAKSTRIPE_CLONE_STS_OK, strlen(MAKSTRIPE_CLONE_STS_OK)) != 0) {
-		printf("We expect a string of length: %i\n", strlen(MAKSTRIPE_CLONE_STS_OK));
+		printf("We expect a string of length: %zd\n", strlen(MAKSTRIPE_CLONE_STS_OK));
 		printf("buf was unequal to MAKSTRIPE_CLONE_STS_OK: %s\n", MAKSTRIPE_CLONE_STS_OK);
 		printf("%c%c%c%c%c\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 		return -1;

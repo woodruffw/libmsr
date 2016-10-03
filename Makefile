@@ -1,6 +1,6 @@
 # This currently builds a user space program and not a useful library
 
-CFLAGS=	-Wall -g -ansi -pedantic
+CFLAGS=	-Wall -g -std=c99 -pedantic
 LDFLAGS= -L. -lmsr
 
 LIB=	libmsr.a
@@ -28,7 +28,7 @@ $(LIB): $(LIBOBJS)
 .c.o:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-install: 
+install:
 	install -m644 -D $(LIB) $(DESTDIR)/usr/$(LIB)
 	for subdir in $(SUBDIRS); do \
 	  (cd $$subdir && $(MAKE) install); \
