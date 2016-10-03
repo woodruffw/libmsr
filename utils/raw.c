@@ -11,7 +11,6 @@
 
 #include "libmsr.h"
 #include "serialio.h"
-#include "msr206.h"
 
 #ifdef notdef
 int
@@ -70,7 +69,7 @@ setbit (uint8_t * buf, uint8_t len, int bit, int val)
 }
 #endif
 
-int 
+int
 do_leet_led_dance (int fd)
 {
 	int z = 0;
@@ -96,7 +95,7 @@ int main(int argc, char * argv[])
 	uint8_t len;
 
 	/* Default device selection per platform */
-#ifdef __linux__ 
+#ifdef __linux__
 	char *device = "/dev/ttyS0";
 #else
 	char *device = "/dev/cuaU0";
@@ -107,7 +106,7 @@ int main(int argc, char * argv[])
 	else
 		printf ("no device specified, defaulting to %s\n", device);
 
-	serial = serial_open (device, &fd);
+	serial = msr_serial_open (device, &fd);
 
 	if (serial == -1) {
 		err(1, "Serial open of %s failed", device);
@@ -199,6 +198,6 @@ printf ("LEN: %d\n", len);
 	msr_init (fd);
 
 	/* We're finished */
-	serial_close (fd);
+	msr_serial_close (fd);
 	exit(0);
 }

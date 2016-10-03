@@ -15,10 +15,7 @@
 /* I can't believe that I'm so lazy */
 #include <arpa/inet.h>
 
-
 #include "libmsr.h"
-#include "serialio.h"
-#include "makstripe.h"
 
 /* Remember that the MAKStripe desires MAK_BAUD for serial io. */
 /* It also requires MAK_BLOCK which we haven't defined. */
@@ -30,7 +27,7 @@ mak_cmd(int fd, uint8_t c, uint8_t tracks)
 	cmd.mak_cmd = c;
 	cmd.mak_track_mask = tracks;
 	printf("Attempting to send command: %c\n", cmd.mak_cmd);
-	return (serial_write(fd,&cmd, sizeof(cmd)));
+	return (msr_serial_write(fd,&cmd, sizeof(cmd)));
 }
 
 int mak_reset(int fd)
@@ -41,10 +38,10 @@ int mak_reset(int fd)
 	memset(buf, 0, strlen(MAK_RESET_RESP));
 	buf[0] = MAK_RESET_CMD;
 	printf("Sending reset command: %c\n", MAK_RESET_CMD);
-	serial_write(fd, buf, sizeof(MAK_RESET_CMD));
+	msr_serial_write(fd, buf, sizeof(MAK_RESET_CMD));
 	printf("We expect: %s\n", MAK_RESET_RESP);
 	printf("We got ");
-	r = serial_read(fd, buf, strlen(MAK_RESET_RESP));
+	r = msr_serial_read(fd, buf, strlen(MAK_RESET_RESP));
 	buf[strlen(MAK_RESET_RESP)] = '\0';
 	printf("buf: %s\n", buf);
 	printf("Reset status: %d\n", r);
@@ -56,7 +53,7 @@ int mak_flush(fd)
 	int r;
 	char buf[1];
 	do {
-		r = serial_read(fd, buf, 1);
+		r = msr_serial_read(fd, buf, 1);
 	} while (r != 0);
 	return r;
 }
@@ -76,7 +73,7 @@ mak_read(int fd, uint8_t tracks)
 
 	printf("Command sent!\n");
 	/* Ready response is needed here, check for this. */
-	serial_read(fd, buf, strlen(MAKSTRIPE_READ_RESP) -1);
+	msr_serial_read(fd, buf, strlen(MAKSTRIPE_READ_RESP) -1);
 	printf("We got: %s\n", buf);
 	printf("We expected: %s\n", MAKSTRIPE_READ_RESP);
 	if (!memcmp(buf, MAKSTRIPE_READ_RESP, strlen(MAKSTRIPE_READ_RESP))) {
@@ -87,7 +84,7 @@ mak_read(int fd, uint8_t tracks)
 
 	memset(buf, 0, 3);
 	/* 'RD '<16bits of length data><data samples> */
-	serial_read(fd, buf, 3);
+	msr_serial_read(fd, buf, 3);
 	printf("We expect: %s\n", MAKSTRIPE_READ_BUF_PREFIX);
 	printf("We expect it to be of len: %d\n", strlen(MAKSTRIPE_READ_BUF_PREFIX));
 	printf("We got: %s\n", buf);
@@ -95,20 +92,20 @@ mak_read(int fd, uint8_t tracks)
 	if (r != 0) {
 		return -1;
 	}
-	serial_read(fd, &sample_count, 2);
+	msr_serial_read(fd, &sample_count, 2);
 	printf("Sample count appears to be: %d\n", sample_count);
 	sample_count_guessing = ntohs(sample_count);
 	printf("Sample count appears to be: %d\n", sample_count_guessing);
 
 	/* XXX: We currently clobber the data. We don't return it. */
 	for (i = 0; i < sample_count_guessing ; i++) { /* Why is this off? sleeppppy... */
-		serial_read(fd, sample_tmp, 2);
+		msr_serial_read(fd, sample_tmp, 2);
 		printf("%d %02x %02x\n", i, sample_tmp[0], sample_tmp[1]);
 	}
 
 	printf("In theory, we have dumped the full sample data now...\n");
 	/* Lets ensure that the sample read went correctly! */
-	serial_read(fd, buf, 5);
+	msr_serial_read(fd, buf, 5);
 	printf("Sample read returned status: %s\n", buf);
 
 	r = memcmp(buf, MAKSTRIPE_READ_STS_OK, 5);
@@ -159,7 +156,7 @@ mak_clone(int fd)
 	char buf[strlen(MAKSTRIPE_CLONE_STS_OK)];
 	buf[0] = MAKSTRIPE_CLONE_CMD;
 	buf[1] = 0x7;
-	c = serial_write(fd, buf, 2);
+	c = msr_serial_write(fd, buf, 2);
 	printf("Serial write status: %i\n", c);
 
 /*
@@ -170,7 +167,7 @@ mak_clone(int fd)
 */
 
 	/* Read the response and make sure it matches MAKSTRIPE_CLONE_RESP */
-	c = serial_read(fd, buf, strlen(MAKSTRIPE_CLONE_RESP));
+	c = msr_serial_read(fd, buf, strlen(MAKSTRIPE_CLONE_RESP));
 	if (memcmp(buf, MAKSTRIPE_CLONE_RESP, strlen(MAKSTRIPE_CLONE_RESP)) != 0) {
 		printf("buf should be: %s\n", MAKSTRIPE_CLONE_RESP);
 		printf("%c%c%c%c%c\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
@@ -181,7 +178,7 @@ mak_clone(int fd)
 	printf("Please swipe blank card\n");
 
 	/* Read the response and make sure it matches MAKSTRIPE_CLONE_STS_OK */
-	c = serial_read(fd, buf, strlen(MAKSTRIPE_CLONE_STS_OK));
+	c = msr_serial_read(fd, buf, strlen(MAKSTRIPE_CLONE_STS_OK));
 	if (memcmp(buf, MAKSTRIPE_CLONE_STS_OK, strlen(MAKSTRIPE_CLONE_STS_OK)) != 0) {
 		printf("We expect a string of length: %i\n", strlen(MAKSTRIPE_CLONE_STS_OK));
 		printf("buf was unequal to MAKSTRIPE_CLONE_STS_OK: %s\n", MAKSTRIPE_CLONE_STS_OK);

@@ -5,16 +5,15 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <termios.h>
 #include <err.h>
 
-#include "serialio.h"
+#include "libmsr.h"
 
 /*
  * Serial I/O routines.
  */
 
-static int serial_setup (int fd, speed_t baud);
+static int msr_serial_setup (int fd, speed_t baud);
 
 /*
  * Read a character from the serial port. Note that this
@@ -22,7 +21,7 @@ static int serial_setup (int fd, speed_t baud);
  */
 
 int
-serial_readchar (int fd, uint8_t * c)
+msr_serial_readchar (int fd, uint8_t * c)
 {
 	char		b;
 	int		r;
@@ -47,7 +46,7 @@ serial_readchar (int fd, uint8_t * c)
  */
 
 int
-serial_read (int fd, void * buf, size_t len)
+msr_serial_read (int fd, void * buf, size_t len)
 {
 	size_t i;
 	uint8_t b, *p;
@@ -58,7 +57,7 @@ serial_read (int fd, void * buf, size_t len)
 	printf("[RX %.3d]", len);
 #endif
 	for (i = 0; i < len; i++) {
-		serial_readchar (fd, &b);
+		msr_serial_readchar (fd, &b);
 #ifdef SERIAL_DEBUG
 		printf(" %.2x", b);
 #endif
@@ -72,7 +71,7 @@ serial_read (int fd, void * buf, size_t len)
 }
 
 int
-serial_write (int fd, void * buf, size_t len)
+msr_serial_write (int fd, void * buf, size_t len)
 {
 	return (write (fd, buf, len));
 }
@@ -85,7 +84,7 @@ serial_write (int fd, void * buf, size_t len)
  */
 
 static int
-serial_setup (int fd, speed_t baud)
+msr_serial_setup (int fd, speed_t baud)
 {
         struct termios	options;
 
@@ -139,7 +138,7 @@ serial_setup (int fd, speed_t baud)
 }
 
 int
-serial_open(char *path, int * fd, int blocking, speed_t baud)
+msr_serial_open(char *path, int * fd, int blocking, speed_t baud)
 {
 	int		f;
 
@@ -148,7 +147,7 @@ serial_open(char *path, int * fd, int blocking, speed_t baud)
 	if (f == -1)
 		return (-1);
 
-	if (serial_setup (f, baud) != 0) {
+	if (msr_serial_setup (f, baud) != 0) {
 		close (f);
 		return (-1);
 	}
@@ -159,7 +158,7 @@ serial_open(char *path, int * fd, int blocking, speed_t baud)
 }
 
 int
-serial_close(int fd)
+msr_serial_close(int fd)
 {
 	close (fd);
 	return (0);

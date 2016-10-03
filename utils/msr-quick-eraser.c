@@ -10,8 +10,6 @@
 #include <string.h>
 
 #include "libmsr.h"
-#include "serialio.h"
-#include "msr206.h"
 
 int main(int argc, char * argv[])
 {
@@ -30,7 +28,7 @@ int main(int argc, char * argv[])
 	else
 		printf ("no device specified, defaulting to %s\n", device);
 
-	serial = serial_open (device, &fd, MSR_BLOCKING, MSR_BAUD);
+	serial = msr_serial_open (device, &fd, MSR_BLOCKING, MSR_BAUD);
 
 	if (serial == -1) {
 		err(1, "Serial open of %s failed", device);
@@ -56,6 +54,6 @@ int main(int argc, char * argv[])
 	msr_init (fd);
 
 	/* We're finished */
-	serial_close (fd);
+	msr_serial_close (fd);
 	exit(0);
 }
