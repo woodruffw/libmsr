@@ -19,32 +19,33 @@
 
 /* Remember that the MAKStripe desires MAK_BAUD for serial io. */
 /* It also requires MAK_BLOCK which we haven't defined. */
-
-int
-mak_cmd(int fd, uint8_t c, uint8_t tracks)
+int mak_cmd(int fd, uint8_t c, uint8_t tracks)
 {
-	mak_generic_cmd_t	cmd;
+	mak_generic_cmd_t cmd;
 	cmd.mak_cmd = c;
 	cmd.mak_track_mask = tracks;
 	printf("Attempting to send command: %c\n", cmd.mak_cmd);
-	return (msr_serial_write(fd,&cmd, sizeof(cmd)));
+	return (msr_serial_write(fd, &cmd, sizeof(cmd)));
 }
 
 int mak_reset(int fd)
 {
 	int r;
-	/*int i;*/
 	char buf[strlen(MAK_RESET_RESP) + 1];
+
 	memset(buf, 0, strlen(MAK_RESET_RESP));
 	buf[0] = MAK_RESET_CMD;
+
 	printf("Sending reset command: %c\n", MAK_RESET_CMD);
 	msr_serial_write(fd, buf, sizeof(MAK_RESET_CMD));
+
 	printf("We expect: %s\n", MAK_RESET_RESP);
 	printf("We got ");
 	r = msr_serial_read(fd, buf, strlen(MAK_RESET_RESP));
 	buf[strlen(MAK_RESET_RESP)] = '\0';
 	printf("buf: %s\n", buf);
 	printf("Reset status: %d\n", r);
+
 	return r;
 }
 
@@ -52,14 +53,15 @@ int mak_flush(int fd)
 {
 	int r;
 	char buf[1];
+
 	do {
 		r = msr_serial_read(fd, buf, 1);
 	} while (r != 0);
+
 	return r;
 }
 
-int
-mak_read(int fd, uint8_t tracks)
+int mak_read(int fd, uint8_t tracks)
 {
 	int r;
 	int i;
@@ -116,8 +118,7 @@ mak_read(int fd, uint8_t tracks)
 }
 
 /* The MAKStripe is a bit of a pain and has failures reading often. Wrap it.*/
-int
-mak_successful_read(int fd, uint8_t tracks)
+int mak_successful_read(int fd, uint8_t tracks)
 {
 	int r;
 	do {
@@ -149,8 +150,7 @@ mak_populate_buffer(int fd)
  * <swipe card>
  * Response: CP=OK
 */
-int
-mak_clone(int fd)
+int mak_clone(int fd)
 {
 	int c;
 	char buf[strlen(MAKSTRIPE_CLONE_STS_OK)];
@@ -191,8 +191,7 @@ mak_clone(int fd)
 }
 
 /* The MAKStripe is a bit of a pain and has failures cloning often. Wrap it.*/
-int
-mak_successful_clone(int fd)
+int mak_successful_clone(int fd)
 {
 	int r;
 	do {
