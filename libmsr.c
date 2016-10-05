@@ -1,14 +1,8 @@
-#include <sys/types.h>
-
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
+#include <libmsr.h>
 
-#include "libmsr.h"
-
-int
-msr_dumpbits (uint8_t * buf, int len)
+void
+msr_output_bits(int fd, uint8_t *buf, int len)
 {
 	int		bytes, i;
 
@@ -23,13 +17,19 @@ msr_dumpbits (uint8_t * buf, int len)
 
 		for (i = 7; i > -1; i--) {
 			if (buf[bytes] & (1 << i))
-				printf("1");
+				dprintf(fd, "1");
 			else
-				printf("0");
+				dprintf(fd, "0");
 		}
 	}
-	printf ("\n");
-	return (0);
+	dprintf (fd, "\n");
+}
+
+int
+msr_dumpbits (uint8_t * buf, int len)
+{
+	msr_output_bits(1, buf, len);
+	return 0;
 }
 
 int
@@ -177,41 +177,61 @@ msr_reverse_track (int track_number, msr_tracks_t * tracks)
 	return status;
 }
 
-/* Take a track structure and print it as hex bytes. */
-void
-msr_pretty_printer_hex (msr_tracks_t tracks)
+/* Take a track structure and write it as hex bytes. */
+void msr_pretty_output_hex(int fd, msr_tracks_t tracks)
 {
 	int tn;
 	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
 		int x;
-		printf("Track %d: \n", tn);
+		dprintf(fd, "Track %d: \n", tn);
 		for (x = 0; x < tracks.msr_tracks[tn].msr_tk_len; x++)
-			printf("%02x ", tracks.msr_tracks[tn].msr_tk_data[x]);
-		printf("\n");
+			dprintf(fd, "%02x ", tracks.msr_tracks[tn].msr_tk_data[x]);
+		dprintf(fd, "\n");
 	}
+}
+
+/* Take a track structure and write it as a string. */
+void msr_pretty_output_string(int fd, msr_tracks_t tracks)
+{
+	int tn;
+	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
+		if (tracks.msr_tracks[tn].msr_tk_len) {
+			dprintf(fd, "Track %d: \n[%s]\n", tn,
+				tracks.msr_tracks[tn].msr_tk_data);
+		}
+	}
+}
+
+/* Take a track structure and write it as bits. */
+void msr_pretty_output_bits(int fd, msr_tracks_t tracks)
+{
+	int tn;
+	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
+		dprintf(fd, "Track %d: \n", tn);
+		msr_output_bits(fd, tracks.msr_tracks[tn].msr_tk_data,
+			tracks.msr_tracks[tn].msr_tk_len);
+	}
+}
+
+/* Take a track structure and print it as hex bytes. */
+void
+msr_pretty_printer_hex (msr_tracks_t tracks)
+{
+	msr_pretty_output_hex(1, tracks);
 }
 
 /* Take a track structure and print it as a string. */
 void
 msr_pretty_printer_string (msr_tracks_t tracks)
 {
-	int tn;
-	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
-		if (tracks.msr_tracks[tn].msr_tk_len)
-			printf ("Track %d: \n[%s]\n", tn,
-			tracks.msr_tracks[tn].msr_tk_data);
-	}
+	msr_pretty_output_string(1, tracks);
 }
 
 /* Take a track structure and print it as bits. */
 void
 msr_pretty_printer_bits(msr_tracks_t tracks)
 {
-	int tn;
-	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
-		printf("Track %d: \n", tn);
-		msr_dumpbits(tracks.msr_tracks[tn].msr_tk_data, tracks.msr_tracks[tn].msr_tk_len);
-	}
+	msr_pretty_output_bits(1, tracks);
 }
 
 /* Reverse a byte. */

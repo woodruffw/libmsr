@@ -1,8 +1,4 @@
-#include <sys/types.h>
-#include <sys/ioctl.h>
 #include <sys/fcntl.h>
-
-#define __USE_BSD
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -82,10 +78,10 @@ static int
 getstart (int fd)
 {
 	uint8_t b;
-	int i, r;
+	int i;
 
 	for (i = 0; i < 3; i++) {
-		r = msr_serial_readchar(fd, &b);
+		msr_serial_readchar(fd, &b);
 		if (b == MSR_RW_START)
 			break;
 	}
@@ -188,7 +184,7 @@ msr_fwrev (int fd)
 {
 	uint8_t		buf[64];
 
-	bzero (buf, sizeof(buf));
+	memset(buf, 0, sizeof(buf));
 
 	if (msr_cmd (fd, MSR_CMD_FWREV) != 0)
             return (-1);

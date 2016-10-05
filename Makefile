@@ -1,6 +1,6 @@
 # This currently builds a user space program and not a useful library
 
-CFLAGS=	-Wall -g -std=c99 -pedantic
+CFLAGS=	-Wall -g -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
 LDFLAGS= -L. -lmsr
 
 LIB=	libmsr.a
