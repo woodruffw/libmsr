@@ -12,19 +12,16 @@
 /*
  * Serial I/O routines.
  */
-
 static int msr_serial_setup (int fd, speed_t baud);
 
 /*
  * Read a character from the serial port. Note that this
  * routine will block until a valid character is read.
  */
-
-int
-msr_serial_readchar (int fd, uint8_t * c)
+int msr_serial_readchar (int fd, uint8_t * c)
 {
-	char		b;
-	int		r;
+	char b;
+	int	r;
 
 	while ((r = read (fd, &b, 1)) == -1)
 		;
@@ -44,9 +41,7 @@ msr_serial_readchar (int fd, uint8_t * c)
  * routine will block until the desired number of characters
  * is read.
  */
-
-int
-msr_serial_read (int fd, void * buf, size_t len)
+int msr_serial_read (int fd, void * buf, size_t len)
 {
 	size_t i;
 	uint8_t b, *p;
@@ -70,8 +65,7 @@ msr_serial_read (int fd, void * buf, size_t len)
 	return (0);
 }
 
-int
-msr_serial_write (int fd, void * buf, size_t len)
+int msr_serial_write (int fd, void * buf, size_t len)
 {
 	return (write (fd, buf, len));
 }
@@ -86,7 +80,7 @@ msr_serial_write (int fd, void * buf, size_t len)
 static int
 msr_serial_setup (int fd, speed_t baud)
 {
-        struct termios	options;
+    struct termios options;
 
 
 	if (tcgetattr(fd, &options) == -1)
@@ -105,8 +99,8 @@ msr_serial_setup (int fd, speed_t baud)
 	options.c_cflag |= CS8;
 
 	/*
-         * Local modes
-         * We have to clear the ISIG flag to defeat signal
+     * Local modes
+     * We have to clear the ISIG flag to defeat signal
 	 * processing in order to see the file separator
 	 * character (0x1C) which the device will send as
 	 * part of its end of record markers.
@@ -137,10 +131,9 @@ msr_serial_setup (int fd, speed_t baud)
 	return (0);
 }
 
-int
-msr_serial_open(char *path, int * fd, int blocking, speed_t baud)
+int msr_serial_open(char *path, int * fd, int blocking, speed_t baud)
 {
-	int		f;
+	int	f;
 
 	f = open(path, blocking | O_RDWR | O_FSYNC);
 
@@ -157,8 +150,7 @@ msr_serial_open(char *path, int * fd, int blocking, speed_t baud)
 	return (0);
 }
 
-int
-msr_serial_close(int fd)
+int msr_serial_close(int fd)
 {
 	close (fd);
 	return (0);

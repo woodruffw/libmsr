@@ -1,10 +1,8 @@
-#include <sys/fcntl.h>
+#include <time.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <strings.h>
-#include <termios.h>
 #include <err.h>
 #include <string.h>
 
@@ -26,9 +24,7 @@
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_cmd (int fd, uint8_t c)
+int msr_cmd (int fd, uint8_t c)
 {
 	msr_cmd_t	cmd;
 
@@ -49,7 +45,6 @@ msr_cmd (int fd, uint8_t c)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
 int msr_zeros (int fd)
 {
 	msr_lz_t lz;
@@ -73,9 +68,7 @@ int msr_zeros (int fd)
  * or the descriptor <fd> is invalid, or if the MSR_RW_START byte
  * is not seen in the first 3 characters read by the device.
  */
-
-static int
-getstart (int fd)
+static int getstart (int fd)
 {
 	uint8_t b;
 	int i;
@@ -105,9 +98,7 @@ getstart (int fd)
  * or the descriptor <fd> is invalid, or if the status code
  * returned by the device is not MSR_STS_OK.
  */
-
-static int
-getend (int fd)
+static int getend (int fd)
 {
 	msr_end_t m;
 
@@ -133,9 +124,7 @@ getend (int fd)
  * or the descriptor <fd> is invalid, or if the status code
  * returned by the device is not MSR_STS_COMM_OK.
  */
-
-int
-msr_commtest (int fd)
+int msr_commtest (int fd)
 {
 	int r;
 	uint8_t buf[2];
@@ -178,9 +167,7 @@ msr_commtest (int fd)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_fwrev (int fd)
+int msr_fwrev (int fd)
 {
 	uint8_t		buf[64];
 
@@ -212,9 +199,7 @@ msr_fwrev (int fd)
  * or the descriptor <fd> is invalid, or if the device does not
  * return an MSR_STS_MODEL_OK status.
  */
-
-int
-msr_model (int fd)
+int msr_model (int fd)
 {
 	msr_model_t	m;
 
@@ -252,10 +237,9 @@ msr_model (int fd)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_flash_led (int fd, uint8_t led)
+int msr_flash_led (int fd, uint8_t led)
 {
+	struct timespec pause = { .tv_sec = 0, .tv_nsec = 100000000};
 	int r;
 
 	r = msr_cmd (fd, led);
@@ -263,7 +247,7 @@ msr_flash_led (int fd, uint8_t led)
 	if (r == -1)
 		err(1, "LED failure");
 
-	usleep (100000);
+	nanosleep(&pause, NULL);
 
 	/* No response, look at the lights Dr. Love */
 	return (0);
@@ -295,9 +279,7 @@ msr_flash_led (int fd, uint8_t led)
  * or the descriptor <fd> is invalid, or if the track being read
  * does not match the specified track number <t>.
  */
-
-static int
-gettrack_iso (int fd, int t, uint8_t * buf, uint8_t * len)
+static int gettrack_iso (int fd, int t, uint8_t * buf, uint8_t * len)
 {
 	uint8_t b;
 	int i = 0;
@@ -374,9 +356,7 @@ gettrack_iso (int fd, int t, uint8_t * buf, uint8_t * len)
  * or the descriptor <fd> is invalid, or if the track being read
  * does not match the specified track number <t>.
  */
-
-static int
-gettrack_raw (int fd, int t, uint8_t * buf, uint8_t * len)
+static int gettrack_raw (int fd, int t, uint8_t * buf, uint8_t * len)
 {
 	uint8_t b, s;
 	int i = 0;
@@ -432,9 +412,7 @@ gettrack_raw (int fd, int t, uint8_t * buf, uint8_t * len)
  * or the descriptor <fd> is invalid, or if the device does not
  * return the MSR_STS_SENSOR_OK status code.
  */
-
-int
-msr_sensor_test (int fd)
+int msr_sensor_test (int fd)
 {
 	uint8_t b[4];
 
@@ -464,9 +442,7 @@ msr_sensor_test (int fd)
  * or the descriptor <fd> is invalid, or if the device does not
  * return the MSR_STS_RAM_OK status code.
  */
-
-int
-msr_ram_test (int fd)
+int msr_ram_test (int fd)
 {
 	uint8_t b[2] = {0};
 
@@ -500,9 +476,7 @@ msr_ram_test (int fd)
  * or the descriptor <fd> is invalid, or if the device does not
  * return the MSR_STS_OK status code.
  */
-
-int
-msr_set_hi_co (int fd)
+int msr_set_hi_co (int fd)
 {
 	char b[2] = {0};
 
@@ -538,9 +512,7 @@ msr_set_hi_co (int fd)
  * or the descriptor <fd> is invalid, or if the device does not
  * return the MSR_STS_OK status code.
  */
-
-int
-msr_set_lo_co (int fd)
+int msr_set_lo_co (int fd)
 {
 	char b[2] = {0};
 
@@ -573,13 +545,13 @@ msr_set_lo_co (int fd)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_reset (int fd)
+int msr_reset (int fd)
 {
+	struct timespec pause = { .tv_sec = 0, .tv_nsec = 100000000};
+
 	msr_cmd (fd, MSR_CMD_RESET);
 
-	usleep (100000);
+	nanosleep(&pause, NULL);
 
 	return (0);
 }
@@ -598,9 +570,7 @@ msr_reset (int fd)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_iso_read(int fd, msr_tracks_t * tracks)
+int msr_iso_read(int fd, msr_tracks_t * tracks)
 {
 	int r;
 	int i;
@@ -655,9 +625,7 @@ msr_iso_read(int fd, msr_tracks_t * tracks)
  * or the descriptor <fd> is invalid, or if the device does not
  * return an MSR_STS_ERASE_OK status code.
  */
-
-int
-msr_erase (int fd, uint8_t tracks)
+int msr_erase (int fd, uint8_t tracks)
 {
 	uint8_t b[2];
 
@@ -694,9 +662,7 @@ msr_erase (int fd, uint8_t tracks)
  * or the descriptor <fd> is invalid, or if the MST_STS_OK status
  * code is not returned.
  */
-
-int
-msr_iso_write(int fd, msr_tracks_t * tracks)
+int msr_iso_write(int fd, msr_tracks_t * tracks)
 {
 	int i;
 	uint8_t buf[4];
@@ -747,9 +713,7 @@ msr_iso_write(int fd, msr_tracks_t * tracks)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_raw_read(int fd, msr_tracks_t * tracks)
+int msr_raw_read(int fd, msr_tracks_t * tracks)
 {
 	int r;
 	int i;
@@ -795,9 +759,7 @@ msr_raw_read(int fd, msr_tracks_t * tracks)
  * or the descriptor <fd> is invalid, or if the MST_STS_OK status
  * code is not returned.
  */
-
-int
-msr_raw_write(int fd, msr_tracks_t * tracks)
+int msr_raw_write(int fd, msr_tracks_t * tracks)
 {
 	int i;
 	uint8_t buf[4];
@@ -844,9 +806,7 @@ msr_raw_write(int fd, msr_tracks_t * tracks)
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-
-int
-msr_init(int fd)
+int msr_init(int fd)
 {
 	msr_reset (fd);
 	if (msr_commtest (fd) == -1)
@@ -868,9 +828,7 @@ msr_init(int fd)
  * or the descriptor <fd> is invalid, or if the MSR_STS_OK status
  * is not returned.
  */
-
-int
-msr_set_bpi (int fd, uint8_t bpi)
+int msr_set_bpi (int fd, uint8_t bpi)
 {
 	uint8_t b[2];
 
@@ -899,9 +857,7 @@ msr_set_bpi (int fd, uint8_t bpi)
  * or the descriptor <fd> is invalid, or if the MSR_STS_OK status
  * is not returned.
  */
-
-int
-msr_set_bpc (int fd, uint8_t bpc1, uint8_t bpc2, uint8_t bpc3)
+int msr_set_bpc (int fd, uint8_t bpc1, uint8_t bpc2, uint8_t bpc3)
 {
 	uint8_t b[2];
 	msr_bpc_t bpc;

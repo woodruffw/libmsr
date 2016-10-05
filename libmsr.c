@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <libmsr.h>
 
-void
-msr_output_bits(int fd, uint8_t *buf, int len)
+static void output_bits(int fd, uint8_t *buf, int len)
 {
-	int		bytes, i;
+	int	bytes, i;
 
 	for (bytes = 0; bytes < len; bytes++) {
 
@@ -22,21 +21,19 @@ msr_output_bits(int fd, uint8_t *buf, int len)
 				dprintf(fd, "0");
 		}
 	}
-	dprintf (fd, "\n");
+	dprintf(fd, "\n");
 }
 
-int
-msr_dumpbits (uint8_t * buf, int len)
+int msr_dumpbits (uint8_t * buf, int len)
 {
-	msr_output_bits(1, buf, len);
+	output_bits(1, buf, len);
 	return 0;
 }
 
-int
-msr_getbit (uint8_t * buf, uint8_t len, int bit)
+int msr_getbit (uint8_t * buf, uint8_t len, int bit)
 {
-	int		byte;
-	int		b;
+	int	byte;
+	int	b;
 
 	if (bit > (len * 8)) {
 		printf ("%d > %d\n", bit, len * 8);
@@ -51,11 +48,10 @@ msr_getbit (uint8_t * buf, uint8_t len, int bit)
 	return (0);
 }
 
-int
-msr_setbit (uint8_t * buf, uint8_t len, int bit, int val)
+int msr_setbit (uint8_t * buf, uint8_t len, int bit, int val)
 {
-	int		byte;
-	int		b;
+	int	byte;
+	int	b;
 
 	if (bit > (len * 8)) {
 		printf ("%d > %d\n", bit, len * 8);
@@ -74,8 +70,7 @@ msr_setbit (uint8_t * buf, uint8_t len, int bit, int val)
 }
 
 
-int
-msr_decode(uint8_t * inbuf, uint8_t inlen,
+int msr_decode(uint8_t * inbuf, uint8_t inlen,
     uint8_t * outbuf, uint8_t * outlen, int bpc)
 {
 	uint8_t * b;
@@ -132,8 +127,7 @@ msr_decode(uint8_t * inbuf, uint8_t inlen,
 
 /* Some cards require a swipe in the opposite direction of the reader. */
 /* We can get the expected bit stream by reversing the data in place. */
-int
-msr_reverse_tracks (msr_tracks_t * tracks)
+int msr_reverse_tracks (msr_tracks_t * tracks)
 {
 	int i, status;
 	for (i = 0; i < MSR_MAX_TRACKS; i++) {
@@ -149,8 +143,7 @@ msr_reverse_tracks (msr_tracks_t * tracks)
 
 /* We want to take a track and reverse the order of each byte. */
 /* Additionally, we want to flip each byte. */
-int
-msr_reverse_track (int track_number, msr_tracks_t * tracks)
+int msr_reverse_track (int track_number, msr_tracks_t * tracks)
 {
 	int i;
 	int status = 0;
@@ -208,35 +201,31 @@ void msr_pretty_output_bits(int fd, msr_tracks_t tracks)
 	int tn;
 	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
 		dprintf(fd, "Track %d: \n", tn);
-		msr_output_bits(fd, tracks.msr_tracks[tn].msr_tk_data,
+		output_bits(fd, tracks.msr_tracks[tn].msr_tk_data,
 			tracks.msr_tracks[tn].msr_tk_len);
 	}
 }
 
 /* Take a track structure and print it as hex bytes. */
-void
-msr_pretty_printer_hex (msr_tracks_t tracks)
+void msr_pretty_printer_hex (msr_tracks_t tracks)
 {
 	msr_pretty_output_hex(1, tracks);
 }
 
 /* Take a track structure and print it as a string. */
-void
-msr_pretty_printer_string (msr_tracks_t tracks)
+void msr_pretty_printer_string (msr_tracks_t tracks)
 {
 	msr_pretty_output_string(1, tracks);
 }
 
 /* Take a track structure and print it as bits. */
-void
-msr_pretty_printer_bits(msr_tracks_t tracks)
+void msr_pretty_printer_bits(msr_tracks_t tracks)
 {
 	msr_pretty_output_bits(1, tracks);
 }
 
 /* Reverse a byte. */
-const unsigned char
-msr_reverse_byte(const unsigned char byte)
+const unsigned char msr_reverse_byte(const unsigned char byte)
 {
 	return
 	((byte & 1<<7) >> 7) |
