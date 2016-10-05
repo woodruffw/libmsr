@@ -15,12 +15,7 @@ DMSB=	dmsb
 DMSBSRCS=	dmsb.c
 DMSBOBJS=	$(DMSBSRCS:.c=.o)
 
-SUBDIRS=utils
-
 all:	$(LIB)
-	for subdir in $(SUBDIRS); do \
-	  (cd $$subdir && $(MAKE) all); \
-	done
 
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
@@ -28,11 +23,9 @@ $(LIB): $(LIBOBJS)
 .c.o:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-install:
-	install -m644 -D $(LIB) $(DESTDIR)/usr/$(LIB)
-	for subdir in $(SUBDIRS); do \
-	  (cd $$subdir && $(MAKE) install); \
-	done
+install: $(LIB)
+	install -m644 -D $(LIB) $(DESTDIR)/usr/lib/$(LIB)
+	install -m644 -D libmsr.h $(DESTDIR)/usr/include
 
 AUDIOLDFLAGS=-lsndfile
 
@@ -45,6 +38,3 @@ audio: $(DAB) $(DMSB)
 
 clean:
 	rm -rf *.o *~ $(LIB) $(DAB) $(DMSB)
-	for subdir in $(SUBDIRS); do \
-	  (cd $$subdir && $(MAKE) clean); \
-	done
