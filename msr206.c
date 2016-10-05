@@ -472,7 +472,7 @@ msr_sensor_test (int fd)
 int
 msr_ram_test (int fd)
 {
-	uint8_t b[2];
+	uint8_t b[2] = {0};
 
 	printf("Running ram test...\n");
 	msr_cmd (fd, MSR_CMD_DIAG_RAM);
@@ -480,11 +480,14 @@ msr_ram_test (int fd)
 	msr_serial_read(fd, b, sizeof(b));
 
 	if (b[0] == MSR_ESC && b[1] == MSR_STS_RAM_OK) {
-		printf("RAM test successfull.\n");
+		printf("RAM test successful.\n");
  		return (0);
 	}
+	else {
+		printf("It appears that the RAM test failed\n");
+		printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
+	}
 
-	printf("It appears that the RAM test failed\n");
 	return (-1);
 }
 
@@ -505,7 +508,7 @@ msr_ram_test (int fd)
 int
 msr_set_hi_co (int fd)
 {
-	char b[2];
+	char b[2] = {0};
 
 	printf("Putting the writer to Hi-Co mode...\n");
 
@@ -518,8 +521,11 @@ msr_set_hi_co (int fd)
 		printf("We were able to put the writer into Hi-Co mode.\n");
 		return (0);
 	}
+	else {
+		printf("It appears that the reader did not switch to Hi-Co mode.\n");
+		printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
+	}
 
-	printf("It appears that the reader did not switch to Hi-Co mode.");
 	return (1);
 }
 
@@ -540,7 +546,7 @@ msr_set_hi_co (int fd)
 int
 msr_set_lo_co (int fd)
 {
-	char b[2];
+	char b[2] = {0};
 
 	printf("Putting the writer to Lo-Co mode...\n");
 
@@ -553,8 +559,11 @@ msr_set_lo_co (int fd)
 		printf("We were able to put the writer into Lo-Co mode.\n");
 		return (0);
 	}
+	else {
+		printf("It appears that the reader did not switch to Lo-Co mode.\n");
+		printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
+	}
 
-	printf("It appears that the reader did not switch to Lo-Co mode.");
 	return (1);
 }
 
