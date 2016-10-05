@@ -1,7 +1,9 @@
 /* Everyone must include libmsr.h or they're doing it wrong! */
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <stdint.h>
 
 /*
  * Track lengths when doing raw accesses can be at most 256 byte
@@ -436,5 +438,6 @@ extern int msr_reverse_track (int, msr_tracks_t *);
 
 extern void msr_pretty_printer_hex (msr_tracks_t tracks);
 extern void msr_pretty_printer_string (msr_tracks_t tracks);
+extern void msr_pretty_printer_bits (msr_tracks_t tracks);
 
 extern const unsigned char msr_reverse_byte (const unsigned char);

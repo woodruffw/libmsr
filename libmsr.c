@@ -181,12 +181,12 @@ msr_reverse_track (int track_number, msr_tracks_t * tracks)
 void
 msr_pretty_printer_hex (msr_tracks_t tracks)
 {
-	int track_number;
-	for (track_number = 0; track_number < MSR_MAX_TRACKS; track_number++) {
+	int tn;
+	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
 		int x;
-		printf("Track %d: \n", track_number);
-		for (x = 0; x < tracks.msr_tracks[track_number].msr_tk_len; x++)
-			printf("%02x ", tracks.msr_tracks[track_number].msr_tk_data[x]);
+		printf("Track %d: \n", tn);
+		for (x = 0; x < tracks.msr_tracks[tn].msr_tk_len; x++)
+			printf("%02x ", tracks.msr_tracks[tn].msr_tk_data[x]);
 		printf("\n");
 	}
 }
@@ -195,11 +195,22 @@ msr_pretty_printer_hex (msr_tracks_t tracks)
 void
 msr_pretty_printer_string (msr_tracks_t tracks)
 {
-	int track_number;
-	for (track_number = 0; track_number < MSR_MAX_TRACKS; track_number++) {
-		if (tracks.msr_tracks[track_number].msr_tk_len)
-			printf ("Track %d: \n[%s]\n", track_number,
-			tracks.msr_tracks[track_number].msr_tk_data);
+	int tn;
+	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
+		if (tracks.msr_tracks[tn].msr_tk_len)
+			printf ("Track %d: \n[%s]\n", tn,
+			tracks.msr_tracks[tn].msr_tk_data);
+	}
+}
+
+/* Take a track structure and print it as bits. */
+void
+msr_pretty_printer_bits(msr_tracks_t tracks)
+{
+	int tn;
+	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
+		printf("Track %d: \n", tn);
+		msr_dumpbits(tracks.msr_tracks[tn].msr_tk_data, tracks.msr_tracks[tn].msr_tk_len);
 	}
 }
 
