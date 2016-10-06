@@ -184,7 +184,7 @@ int msr_fwrev (int fd)
 
 	memset(buf, 0, sizeof(buf));
 
-	if (msr_cmd (fd, MSR_CMD_FWREV) != 0)
+	if (msr_cmd (fd, MSR_CMD_FWREV) < 0)
             return LIBMSR_ERR_SERIAL;
 
 	msr_serial_readchar (fd, &buf[0]);
