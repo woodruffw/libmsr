@@ -186,7 +186,7 @@ int mak_clone(int fd)
 		return -1;
 	}
 
-	printf("Clone succesfull: %i\n", c);
+	printf("Clone successful: %i\n", c);
 	return c;
 }
 

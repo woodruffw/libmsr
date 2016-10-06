@@ -62,7 +62,7 @@ int msr_serial_read (int fd, void * buf, size_t len)
 	printf("\n");
 #endif
 
-	return (0);
+	return LIBMSR_ERR_OK;
 }
 
 int msr_serial_write (int fd, void * buf, size_t len)
@@ -83,8 +83,9 @@ msr_serial_setup (int fd, speed_t baud)
     struct termios options;
 
 
-	if (tcgetattr(fd, &options) == -1)
-		return (-1);
+	if (tcgetattr(fd, &options) == -1) {
+		return LIBMSR_ERR_SERIAL;
+	}
 
 	/* Set baud rate */
 	cfsetispeed(&options, baud);
@@ -125,10 +126,11 @@ msr_serial_setup (int fd, speed_t baud)
 
 	options.c_oflag &= ~OPOST;
 
-	if (tcsetattr(fd, TCSANOW, &options) == -1)
-		return (-1);
+	if (tcsetattr(fd, TCSANOW, &options) == -1) {
+		return LIBMSR_ERR_SERIAL;
+	}
 
-	return (0);
+	return LIBMSR_ERR_OK;
 }
 
 int msr_serial_open(char *path, int * fd, int blocking, speed_t baud)
@@ -137,21 +139,22 @@ int msr_serial_open(char *path, int * fd, int blocking, speed_t baud)
 
 	f = open(path, blocking | O_RDWR | O_FSYNC);
 
-	if (f == -1)
-		return (-1);
+	if (f == -1) {
+		return LIBMSR_ERR_SERIAL;
+	}
 
-	if (msr_serial_setup (f, baud) != 0) {
+	if (msr_serial_setup (f, baud) != LIBMSR_ERR_OK) {
 		close (f);
-		return (-1);
+		return LIBMSR_ERR_SERIAL;
 	}
 
 	*fd = f;
 
-	return (0);
+	return LIBMSR_ERR_OK;
 }
 
 int msr_serial_close(int fd)
 {
 	close (fd);
-	return (0);
+	return LIBMSR_ERR_OK;
 }

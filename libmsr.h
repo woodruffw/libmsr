@@ -5,6 +5,15 @@
 #include <termios.h>
 #include <stdint.h>
 
+/* Error codes, to be returned from library functions. */
+
+#define LIBMSR_ERR_OK 0x0 /* no error */
+#define LIBMSR_ERR_GENERIC 0x1000 /* generic errors */
+#define LIBMSR_ERR_ISO 0x1100 /* errors with ISO formatted cards */
+#define LIBMSR_ERR_DEVICE 0x2000 /* errors in device control */
+#define LIBMSR_ERR_SERIAL 0x4000 /* errors in serial I/O */
+
+
 /*
  * Track lengths when doing raw accesses can be at most 256 byte
  * in size, since the size field is only 8 bits wide. So we use this

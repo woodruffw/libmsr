@@ -27,7 +27,8 @@ static void output_bits(int fd, uint8_t *buf, int len)
 int msr_dumpbits (uint8_t * buf, int len)
 {
 	output_bits(1, buf, len);
-	return 0;
+
+	return LIBMSR_ERR_OK;
 }
 
 int msr_getbit (uint8_t * buf, uint8_t len, int bit)
@@ -133,11 +134,14 @@ int msr_reverse_tracks (msr_tracks_t * tracks)
 	for (i = 0; i < MSR_MAX_TRACKS; i++) {
 		status = msr_reverse_track(i, tracks);
 		if (status != 0) {
+#ifdef MSR_DEBUG
 			printf("Unable to reverse track: %i\n", i);
-			status = -1;
+#endif
+			status = LIBMSR_ERR_DEVICE;
 			break;
 		}
 	}
+
 	return status;
 }
 
@@ -146,7 +150,6 @@ int msr_reverse_tracks (msr_tracks_t * tracks)
 int msr_reverse_track (int track_number, msr_tracks_t * tracks)
 {
 	int i;
-	int status = 0;
 	int bytes_to_shuffle;
 	char first_byte;
 	char last_byte;
@@ -167,7 +170,8 @@ int msr_reverse_track (int track_number, msr_tracks_t * tracks)
 		*head = last_byte;
 		*tail = first_byte;
 	}
-	return status;
+
+	return LIBMSR_ERR_OK;
 }
 
 /* Take a track structure and write it as hex bytes. */
@@ -177,8 +181,9 @@ void msr_pretty_output_hex(int fd, msr_tracks_t tracks)
 	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
 		int x;
 		dprintf(fd, "Track %d: \n", tn);
-		for (x = 0; x < tracks.msr_tracks[tn].msr_tk_len; x++)
+		for (x = 0; x < tracks.msr_tracks[tn].msr_tk_len; x++) {
 			dprintf(fd, "%02x ", tracks.msr_tracks[tn].msr_tk_data[x]);
+		}
 		dprintf(fd, "\n");
 	}
 }
