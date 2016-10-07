@@ -180,7 +180,7 @@ void msr_pretty_output_hex(int fd, msr_tracks_t tracks)
 	int tn;
 	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
 		int x;
-		dprintf(fd, "Track %d: \n", tn);
+		dprintf(fd, "Track %d: \n", tn + 1);
 		for (x = 0; x < tracks.msr_tracks[tn].msr_tk_len; x++) {
 			dprintf(fd, "%02x ", tracks.msr_tracks[tn].msr_tk_data[x]);
 		}
@@ -194,7 +194,7 @@ void msr_pretty_output_string(int fd, msr_tracks_t tracks)
 	int tn;
 	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
 		if (tracks.msr_tracks[tn].msr_tk_len) {
-			dprintf(fd, "Track %d: \n[%s]\n", tn,
+			dprintf(fd, "Track %d: \n[%s]\n", tn + 1,
 				tracks.msr_tracks[tn].msr_tk_data);
 		}
 	}
@@ -205,7 +205,7 @@ void msr_pretty_output_bits(int fd, msr_tracks_t tracks)
 {
 	int tn;
 	for (tn = 0; tn < MSR_MAX_TRACKS; tn++) {
-		dprintf(fd, "Track %d: \n", tn);
+		dprintf(fd, "Track %d: \n", tn + 1);
 		output_bits(fd, tracks.msr_tracks[tn].msr_tk_data,
 			tracks.msr_tracks[tn].msr_tk_len);
 	}
