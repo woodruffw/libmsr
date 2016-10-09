@@ -474,7 +474,7 @@ int msr_ram_test (int fd)
 	printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
 #endif
 
-	return (-1);
+	return LIBMSR_ERR_DEVICE;
 }
 
 /*
