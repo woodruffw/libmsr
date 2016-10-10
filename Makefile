@@ -1,21 +1,23 @@
 # This currently builds a user space program and not a useful library
 
-CFLAGS=	-Wall -g -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
-LDFLAGS= -L. -lmsr
+PREFIX = /usr
 
-LIB=	libmsr.a
-LIBSRCS=	libmsr.c serialio.c msr206.c makstripe.c
-LIBOBJS=	$(LIBSRCS:.c=.o)
+CFLAGS = -Wall -g -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
+LDFLAGS = -L. -lmsr
 
-DAB=	dab
-DABSRCS=	dab.c
-DABOBJS=	$(DABSRCS:.c=.o)
+LIB = libmsr.a
+LIBSRCS = libmsr.c serialio.c msr206.c makstripe.c
+LIBOBJS = $(LIBSRCS:.c=.o)
 
-DMSB=	dmsb
-DMSBSRCS=	dmsb.c
-DMSBOBJS=	$(DMSBSRCS:.c=.o)
+DAB = dab
+DABSRCS = dab.c
+DABOBJS =$(DABSRCS:.c=.o)
 
-all:	$(LIB)
+DMSB = dmsb
+DMSBSRCS = dmsb.c
+DMSBOBJS = $(DMSBSRCS:.c=.o)
+
+all: $(LIB)
 
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
@@ -24,8 +26,12 @@ $(LIB): $(LIBOBJS)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 install: $(LIB)
-	install -m644 -D $(LIB) $(DESTDIR)/usr/lib/$(LIB)
-	install -m644 -D libmsr.h $(DESTDIR)/usr/include
+	install -m644 -D $(LIB) $(PREFIX)/lib
+	install -m644 -D libmsr.h $(PREFIX)/include
+
+uninstall:
+	rm -f $(PREFIX)/lib/$(LIB)
+	rm -f $(PREFIX)/include/libmsr.h
 
 AUDIOLDFLAGS=-lsndfile
 
