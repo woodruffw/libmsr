@@ -430,6 +430,7 @@ extern int msr_ram_test (int);
 extern int msr_get_co(int);
 extern int msr_set_hi_co (int);
 extern int msr_set_lo_co (int);
+extern int msr_reset(int);
 extern int msr_iso_read (int, msr_tracks_t *);
 extern int msr_iso_write (int, msr_tracks_t *);
 extern int msr_raw_read (int, msr_tracks_t *);
