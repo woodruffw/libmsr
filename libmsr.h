@@ -205,12 +205,13 @@ typedef struct msr_bpc {
 #define MSR_STS_CO_ERR MSR_STS_ERR
 
 /*
- * Get coercivity. Returns 'H' for high coercivity, 'L' for low.
+ * Get coercivity. Returns 'h' for high coercivity, 'l' for low.
+ * NOTE: The user manual lies here, the returns are lower case!
  */
 
 #define MSR_CMD_GETCO 0x64 /* Read coercivity setting */
-#define MSR_CO_HI 0x48
-#define MSR_CO_LO 0x4C
+#define MSR_CO_HI 0x68
+#define MSR_CO_LO 0x6C
 
 /* The following commands have no response codes */
 
