@@ -208,7 +208,7 @@ typedef struct msr_bpc {
  * Get coercivity. Returns 'H' for high coercivity, 'L' for low.
  */
 
-#define MSR_CMD_GETGO 0x64 /* Read coercivity setting */
+#define MSR_CMD_GETCO 0x64 /* Read coercivity setting */
 #define MSR_CO_HI 0x48
 #define MSR_CO_LO 0x4C
 
@@ -426,6 +426,7 @@ extern int msr_fwrev (int);
 extern int msr_model (int);
 extern int msr_sensor_test (int);
 extern int msr_ram_test (int);
+extern int msr_get_co(int);
 extern int msr_set_hi_co (int);
 extern int msr_set_lo_co (int);
 extern int msr_iso_read (int, msr_tracks_t *);

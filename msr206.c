@@ -477,6 +477,39 @@ int msr_ram_test (int fd)
 	return LIBMSR_ERR_DEVICE;
 }
 
+
+/*
+	Get the device's coercivity level
+
+	This function issues an MSR_CMD_GETCO command to retrieve the device's
+	current coercivity setting, which is either MSR_CO_HI ('H') or
+	MSR_CO_LO ('L').
+
+	This function will fail if the serial port is not initialized or the
+	descriptor <fd> is invalid, or if the device does not return an expected
+	response.
+*/
+int msr_get_co(int fd)
+{
+	char b[2] = {0};
+
+	msr_cmd(fd, MSR_CMD_GETCO);
+
+	msr_serial_read(fd, &b, 2);
+
+	if (b[0] == MSR_ESC && (b[1] == MSR_CO_HI || b[1] == MSR_CO_LO)) {
+		return b[1];
+	}
+
+#ifdef MSR_DEBUG
+	printf("It appears that the reader did not return its coercivity.\n");
+	printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
+#endif
+
+	return LIBMSR_ERR_DEVICE;
+}
+
+
 /*
  * Set coercivity to high
  *
