@@ -727,11 +727,8 @@ int msr_iso_write(int fd, msr_tracks_t * tracks)
 	int i;
 	uint8_t buf[4];
 
-	msr_cmd (fd, MSR_CMD_WRITE);
-
-	buf[0] = MSR_ESC;
-	buf[1] = MSR_RW_START;
-	msr_serial_write (fd, buf, 2);
+	msr_cmd(fd, MSR_CMD_WRITE);
+	msr_cmd(fd, MSR_RW_START);
 
 	for (i = 0; i < MSR_MAX_TRACKS; i++) {
 		buf[0] = MSR_ESC;
@@ -745,10 +742,9 @@ int msr_iso_write(int fd, msr_tracks_t * tracks)
 	buf[1] = MSR_FS;
 	msr_serial_write (fd, buf, 2);
 
-	msr_serial_readchar (fd, &buf[0]);
-	msr_serial_readchar (fd, &buf[0]);
+	msr_serial_read(fd, buf, 2);
 
-	if (buf[0] != MSR_STS_OK) {
+	if (buf[1] != MSR_STS_OK) {
 #ifdef MSR_DEBUG
 		warnx("iso write failed");
 #endif
@@ -838,12 +834,8 @@ int msr_raw_write(int fd, msr_tracks_t * tracks)
 	int i;
 	uint8_t buf[4];
 
-	msr_cmd (fd, MSR_CMD_RAW_WRITE);
-
-
-	buf[0] = MSR_ESC;
-	buf[1] = MSR_RW_START;
-	msr_serial_write (fd, buf, 2);
+	msr_cmd(fd, MSR_CMD_RAW_WRITE);
+	msr_cmd(fd, MSR_RW_START);
 
 	for (i = 0; i < MSR_MAX_TRACKS; i++) {
 		buf[0] = MSR_ESC; /* start delimiter */
