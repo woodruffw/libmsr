@@ -2,7 +2,7 @@
 
 PREFIX = /usr
 
-CFLAGS = -Wall -g -fPIC -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
+CFLAGS = -Wall -g -fPIC -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L -DMSR_DEBUG
 LDFLAGS = -L. -lmsr
 
 LIB = libmsr.a

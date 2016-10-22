@@ -858,12 +858,11 @@ int msr_raw_write(int fd, msr_tracks_t * tracks)
 	buf[1] = MSR_FS;
 	msr_serial_write (fd, buf, 2);
 
-	msr_serial_readchar (fd, &buf[0]);
-	msr_serial_readchar (fd, &buf[0]);
+	msr_serial_read(fd, buf, 2);
 
-	if (buf[0] != MSR_STS_OK) {
+	if (buf[1] != MSR_STS_OK) {
 #ifdef MSR_DEBUG
-		warnx("raw write failed");
+		warnx("raw write failed: %d", buf[1]);
 #endif
 		return LIBMSR_ERR_DEVICE;
 	}

@@ -55,7 +55,7 @@ typedef struct msr_cmd {
 #define MSR_STS_RW_ERR 0x31	/* Read/write error */
 #define MSR_STS_RW_CMDFMT_ERR 0x32 /* Command format error */
 #define MSR_STS_RW_CMDBAD_ERR 0x34 /* Invalid command */
-#define MSR_STS_RW_SWIPEBAD_ERR 0x39 /* Invalud card swipe in write mode */
+#define MSR_STS_RW_SWIPEBAD_ERR 0x39 /* Invalid card swipe in write mode */
 
 typedef struct msr_end {
 	uint8_t msr_enddelim;
