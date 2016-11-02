@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <libmsr.h>
+
+#include "libmsr.h"
 
 static void output_bits(int fd, uint8_t *buf, int len)
 {
@@ -132,7 +133,7 @@ int msr_reverse_tracks (msr_tracks_t * tracks)
 {
 	int i, status;
 	for (i = 0; i < MSR_MAX_TRACKS; i++) {
-		status = msr_reverse_track(i, tracks);
+		status = msr_reverse_track(&(tracks->msr_tracks[i]));
 		if (status != LIBMSR_ERR_OK) {
 #ifdef MSR_DEBUG
 			printf("Unable to reverse track: %i\n", i);
@@ -147,7 +148,7 @@ int msr_reverse_tracks (msr_tracks_t * tracks)
 
 /* We want to take a track and reverse the order of each byte. */
 /* Additionally, we want to flip each byte. */
-int msr_reverse_track (int track_number, msr_tracks_t * tracks)
+int msr_reverse_track (msr_track_t * track)
 {
 	int i;
 	int bytes_to_shuffle;
@@ -157,12 +158,12 @@ int msr_reverse_track (int track_number, msr_tracks_t * tracks)
 	unsigned char * tail;
 
 	/* First we need to know the size of the track */
-	bytes_to_shuffle = tracks->msr_tracks[track_number].msr_tk_len;
+	bytes_to_shuffle = track->msr_tk_len;
 
 	/* Then we need to read each byte from a track */
 	for (i=0; i <= bytes_to_shuffle / 2; i++) {
-		head = &tracks->msr_tracks[track_number].msr_tk_data[i];
-		tail = &tracks->msr_tracks[track_number].msr_tk_data[(bytes_to_shuffle -1) -i];
+		head = &track->msr_tk_data[i];
+		tail = &track->msr_tk_data[(bytes_to_shuffle -1) -i];
 		/* Reverse the full track byte order */
 		first_byte = msr_reverse_byte(*head);
 		last_byte = msr_reverse_byte(*tail);
