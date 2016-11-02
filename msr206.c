@@ -746,7 +746,7 @@ int msr_iso_write(int fd, msr_tracks_t * tracks)
 
 	if (buf[1] != MSR_STS_OK) {
 #ifdef MSR_DEBUG
-		warnx("iso write failed");
+		warnx("iso write failed: 0x%02x", buf[1]);
 #endif
 		return LIBMSR_ERR_DEVICE;
 	}
@@ -854,7 +854,7 @@ int msr_raw_write(int fd, msr_tracks_t * tracks)
 
 	if (buf[1] != MSR_STS_OK) {
 #ifdef MSR_DEBUG
-		warnx("raw write failed: %d", buf[1]);
+		warnx("raw write failed: 0x%02x", buf[1]);
 #endif
 		return LIBMSR_ERR_DEVICE;
 	}

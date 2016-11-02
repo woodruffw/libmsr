@@ -2,8 +2,13 @@
 
 PREFIX = /usr
 
-CFLAGS = -Wall -g -fPIC -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L -DMSR_DEBUG
+CFLAGS = -Wall -g -fPIC -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -L. -lmsr
+
+DEBUG ?= 0
+ifeq ($(DEBUG), 1)
+	CFLAGS += -DMSR_DEBUG
+endif
 
 LIB = libmsr.a
 LIBSRCS = libmsr.c serialio.c msr206.c makstripe.c
