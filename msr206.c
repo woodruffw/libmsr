@@ -173,17 +173,13 @@ int msr_commtest (int fd)
  *
  * This function issues an MSR_CMD_FWREV command to the device
  * to retrieve its firmware revision code. The revision is
- * printed on the standard output.
+ * saved in the supplied buffer, which *must* be at least 9 bytes.
  *
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid.
  */
-int msr_fwrev (int fd)
+int msr_fwrev (int fd, uint8_t *buf)
 {
-	uint8_t		buf[64];
-
-	memset(buf, 0, sizeof(buf));
-
 	if (msr_cmd (fd, MSR_CMD_FWREV) < 0)
             return LIBMSR_ERR_SERIAL;
 
@@ -194,7 +190,9 @@ int msr_fwrev (int fd)
 	msr_serial_read (fd, buf, 8);
 	buf[8] = '\0';
 
+#ifdef MSR_DEBUG
 	printf ("Firmware Version: %s\n", buf);
+#endif
 
 	return LIBMSR_ERR_OK;
 }
@@ -203,14 +201,14 @@ int msr_fwrev (int fd)
  * Check device model.
  *
  * This function issues an MSR_CMD_MODEL command to the device
- * to retrieve its model code. The model code is printed on
- * the standard output.
+ * to retrieve its model code. The model code is saved in the supplied
+ * buffer, which *must* be at least 10 bytes.
  *
  * This function will fail if the serial port is not initialized
  * or the descriptor <fd> is invalid, or if the device does not
  * return an MSR_STS_MODEL_OK status.
  */
-int msr_model (int fd)
+int msr_model (int fd, uint8_t *buf)
 {
 	msr_model_t	m;
 
@@ -223,7 +221,11 @@ int msr_model (int fd)
 	if (m.msr_s != MSR_STS_MODEL_OK)
 		return LIBMSR_ERR_DEVICE;
 
-	printf("Device Model: MSR-206-%c\n", m.msr_model);
+	snprintf((char *) buf, 10, "MSR-206-%c", m.msr_model);
+
+#ifdef MSR_DEBUG
+	printf("%s\n", buf);
+#endif
 
 	return LIBMSR_ERR_OK;
 }
