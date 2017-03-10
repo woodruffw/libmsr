@@ -7,7 +7,7 @@ LDFLAGS = -L. -lmsr
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
-	CFLAGS += -DMSR_DEBUG
+	CFLAGS += -DMSR_DEBUG -DSERIAL_DEBUG
 endif
 
 LIB = libmsr.a
