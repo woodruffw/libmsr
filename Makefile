@@ -11,7 +11,7 @@ ifeq ($(DEBUG), 1)
 endif
 
 LIB = libmsr.a
-LIBSRCS = libmsr.c serialio.c msr206.c makstripe.c
+LIBSRCS = libmsr.c serialio.c msr206.c
 LIBOBJS = $(LIBSRCS:.c=.o)
 
 all: $(LIB)
