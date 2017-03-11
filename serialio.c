@@ -49,7 +49,7 @@ int msr_serial_read (int fd, void * buf, size_t len)
 	p = buf;
 
 #ifdef SERIAL_DEBUG
-	printf("[RX %.3d]", len);
+	printf("[RX %.3lu]", len);
 #endif
 	for (i = 0; i < len; i++) {
 		msr_serial_readchar (fd, &b);
