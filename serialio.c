@@ -14,10 +14,6 @@
  */
 static int msr_serial_setup (int fd, speed_t baud);
 
-/*
- * Read a character from the serial port. Note that this
- * routine will block until a valid character is read.
- */
 int msr_serial_readchar (int fd, uint8_t * c)
 {
 	char b;
@@ -36,11 +32,6 @@ int msr_serial_readchar (int fd, uint8_t * c)
 	return (r);
 }
 
-/*
- * Read a series of characters from the serial port. This
- * routine will block until the desired number of characters
- * is read.
- */
 int msr_serial_read (int fd, void * buf, size_t len)
 {
 	size_t i;
@@ -69,13 +60,6 @@ int msr_serial_write (int fd, void * buf, size_t len)
 {
 	return (write (fd, buf, len));
 }
-
-/*
- * Set serial line options. We need to set the baud rate and
- * turn off most of the internal processing in the tty layer in
- * order to avoid having some of the output from the card reader
- * interpreted as control characters and swallowed.
- */
 
 static int
 msr_serial_setup (int fd, speed_t baud)

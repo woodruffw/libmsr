@@ -1,2 +1,4 @@
 *.o
 libmsr.a
+html/
+man/

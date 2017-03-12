@@ -39,15 +39,15 @@ int msr_getbit (uint8_t * buf, uint8_t len, int bit)
 
 	if (bit > (len * 8)) {
 		printf ("%d > %d\n", bit, len * 8);
-		return (-1);
+		return -1;
 	}
 
 	byte = bit / 8;
 	b = 7 - (bit % 8);
 	if (buf[byte] & (1 << b))
-		return LIBMSR_ERR_GENERIC;
+		return 1;
 
-	return LIBMSR_ERR_OK;
+	return 0;
 }
 
 int msr_setbit (uint8_t * buf, uint8_t len, int bit, int val)
@@ -131,19 +131,12 @@ int msr_decode(uint8_t * inbuf, uint8_t inlen,
 /* We can get the expected bit stream by reversing the data in place. */
 int msr_reverse_tracks (msr_tracks_t * tracks)
 {
-	int i, status;
+	int i;
 	for (i = 0; i < MSR_MAX_TRACKS; i++) {
-		status = msr_reverse_track(&(tracks->msr_tracks[i]));
-		if (status != LIBMSR_ERR_OK) {
-#ifdef MSR_DEBUG
-			printf("Unable to reverse track: %i\n", i);
-#endif
-			status = LIBMSR_ERR_DEVICE;
-			break;
-		}
+		msr_reverse_track(&(tracks->msr_tracks[i]));
 	}
 
-	return status;
+	return LIBMSR_ERR_OK;
 }
 
 /* We want to take a track and reverse the order of each byte. */

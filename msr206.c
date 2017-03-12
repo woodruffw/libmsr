@@ -10,20 +10,6 @@
 
 /* Thanks Club Mate and h1kari! Toorcon 10 */
 
-/*
- * Issue a command to the MSR206
- *
- * This function writes a command byte <c> to the MSR206 via the
- * serial port, via the file descriptor, <fd>. MSR206 commands are
- * issued by sending an ESC character to the device followed by
- * the command byte. Note that we do not check for a response
- * to the command here, as different commands provoke different
- * responses from the device (some may not provoke a response
- * at all).
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_cmd (int fd, uint8_t c)
 {
 	msr_cmd_t	cmd;
@@ -34,23 +20,10 @@ int msr_cmd (int fd, uint8_t c)
 	return (msr_serial_write (fd, &cmd, sizeof(cmd)));
 }
 
-/*
- * Check the number of leading zeros
- *
- * This function queries the device to read its current setting
- * for the number of leading zeroes that will be written when
- * writing ISO formatted data tracks. There are two values: one
- * for tracks 1 and 3, and a second for track 2.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
-int msr_zeros (int fd)
+int msr_zeros (int fd, msr_lz_t *lz)
 {
-	msr_lz_t lz;
-
 	msr_cmd (fd, MSR_CMD_CLZ);
-	msr_serial_read (fd, &lz, sizeof(lz));
+	msr_serial_read (fd, &lz, sizeof(msr_lz_t));
 
 #ifdef MSR_DEBUG
 	printf("zero13: %d zero: %d\n", lz.msr_lz_tk1_3, lz.msr_lz_tk2);
@@ -59,19 +32,6 @@ int msr_zeros (int fd)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Read the start of an ISO formatted read response
- *
- * This is a helper routine used by msr_iso_read() to parse the
- * start delimiter returned by the MSR206 in response to an
- * ISO read command. This delimiter contains 3 characters, the
- * last of which is the MSR_RW_START indication byte. Once this
- * byte is detected, the routine returns.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the MSR_RW_START byte
- * is not seen in the first 3 characters read by the device.
- */
 static int getstart (int fd)
 {
 	uint8_t b;
@@ -118,18 +78,6 @@ static int getend (int fd)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Perform a communications diagnostic test.
- *
- * This function issues an MSR_CMD_DIAG_COMM command to the device
- * to perform a communications diagnostic test. After issuing this
- * command, the device will respond with an MSR_STS_COMM_OK byte
- * if the test passes.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the status code
- * returned by the device is not MSR_STS_COMM_OK.
- */
 int msr_commtest (int fd)
 {
 	int r;
@@ -168,16 +116,6 @@ int msr_commtest (int fd)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Check firmware revision.
- *
- * This function issues an MSR_CMD_FWREV command to the device
- * to retrieve its firmware revision code. The revision is
- * saved in the supplied buffer, which *must* be at least 9 bytes.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_fwrev (int fd, uint8_t *buf)
 {
 	if (msr_cmd (fd, MSR_CMD_FWREV) < 0)
@@ -197,17 +135,6 @@ int msr_fwrev (int fd, uint8_t *buf)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Check device model.
- *
- * This function issues an MSR_CMD_MODEL command to the device
- * to retrieve its model code. The model code is saved in the supplied
- * buffer, which *must* be at least 10 bytes.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the device does not
- * return an MSR_STS_MODEL_OK status.
- */
 int msr_model (int fd, uint8_t *buf)
 {
 	msr_model_t	m;
@@ -230,26 +157,6 @@ int msr_model (int fd, uint8_t *buf)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Toggle LED state
- *
- * This function is used to manually control the LEDs on the
- * MSR206. The device has one green, one yellow and one red LED
- * mounted in it. A given LED is controlled by specifying <led>
- * as follows:
- *
- * MSR_CMD_LED_GRN_ON - turn on green LED
- * MSR_CMD_LED_YLW_ON - turn on yellow LED
- * MSR_CMD_LED_RED_ON - turn on red LED
- * MSR_CMD_LED_OFF - turn all LEDs off
- *
- * After an LED control command is issued to the device, the
- * routine will pause for a tenth of a second to allow time for the
- * command to be processed and the LED to light up.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_flash_led (int fd, uint8_t led)
 {
 	struct timespec pause = { .tv_sec = 0, .tv_nsec = 100000000};
@@ -266,32 +173,6 @@ int msr_flash_led (int fd, uint8_t led)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Read a single ISO formatted track
- *
- * This is a helper function used by msr_iso_read() to read a
- * single track in response to an ISO track read command. The routine
- * reads track <t> into buffer <buf> of length <len>, via file
- * descriptor <fd>. The track data should be prefixed by an ESC
- * character, followed by a single byte indicating the track number,
- * followed by an arbitrary amount of track data. The end of
- * track is detected when an MSR_RW_END or MSR_ESC character
- * is read.
- *
- * The buffer <buf> must be large enough to hold the data read
- * from the card. (The track length can't be more than 255 bytes,
- * for various reasons.) If the length <len> is smaller than the
- * actual amount of track data, then the data returned will be
- * truncated. (That is, if there are 100 bytes of data, but the
- * buffer is only 50 bytes long, only the first 50 bytes will be
- * returned.) If the length <len> is larger than the actual amount
- * of track data, <len> will be adjusted to reflect the actual
- * number of bytes read.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the track being read
- * does not match the specified track number <t>.
- */
 static int gettrack_iso (int fd, int t, uint8_t * buf, uint8_t * len)
 {
 	uint8_t b;
@@ -341,34 +222,6 @@ static int gettrack_iso (int fd, int t, uint8_t * buf, uint8_t * len)
 	return LIBMSR_ERR_DEVICE;
 }
 
-/*
- * Read a single raw track
- *
- * This is a helper function used by msr_raw_read() to read a
- * single track in response to a RAW track read command. The routine
- * reads track <t> into buffer <buf> of length <len>, via file
- * descriptor <fd>. It is similar to the gettrack_iso() routine
- * above, except that the track delimiter format is a little different.
- * The track data should be prefixed by an ESC character, followed by a
- * single byte indicating the track number, followed by another byte
- * indicating the number of bytes of track data that follow. This is
- * required as format of the data is arbitrary, making it impossible
- * to use a given character as an 'end of track' sentinel.
- *
- * The buffer <buf> must be large enough to hold the data read
- * from the card. (The track length can't be more than 255 bytes,
- * for various reasons.) If the length <len> is smaller than the
- * actual amount of track data, then the data returned will be
- * truncated. (That is, if there are 100 bytes of data, but the
- * buffer is only 50 bytes long, only the first 50 bytes will be
- * returned.) If the length <len> is larger than the actual amount
- * of track data, <len> will be adjusted to reflect the actual
- * number of bytes read.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the track being read
- * does not match the specified track number <t>.
- */
 static int gettrack_raw (int fd, int t, uint8_t * buf, uint8_t * len)
 {
 	uint8_t b, s;
@@ -410,21 +263,6 @@ static int gettrack_raw (int fd, int t, uint8_t * buf, uint8_t * len)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Perform sensor test
- *
- * This function issues an MSR_CMD_DIAG_SENSOR command to perform
- * a diagnostic sense on the mechanical card sensor in the MSR206.
- * After issuing the command, the user is instructed to slide a card
- * through the reader. No actual read is performed, however the
- * hardware tests to verify that the card sensor registers the
- * presense of the card in the track. If the card registers correctly,
- * the device will return a status code of MSR_STS_SENSOR_OK.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the device does not
- * return the MSR_STS_SENSOR_OK status code.
- */
 int msr_sensor_test (int fd)
 {
 	uint8_t b[4];
@@ -448,17 +286,6 @@ int msr_sensor_test (int fd)
 	return LIBMSR_ERR_DEVICE;
 }
 
-/*
- * Perform RAM test
- *
- * This function issues an MSR_CMD_DIAG_RAM command to perform
- * a diagnostic sense on the MSR206's internal RAM. If the RAM
- * checks good, the device will return a status code of MSR_STS_RAM_OK.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the device does not
- * return the MSR_STS_RAM_OK status code.
- */
 int msr_ram_test (int fd)
 {
 	uint8_t b[2] = {0};
@@ -479,18 +306,6 @@ int msr_ram_test (int fd)
 	return LIBMSR_ERR_DEVICE;
 }
 
-
-/*
-	Get the device's coercivity level
-
-	This function issues an MSR_CMD_GETCO command to retrieve the device's
-	current coercivity setting, which is either MSR_CO_HI ('H') or
-	MSR_CO_LO ('L').
-
-	This function will fail if the serial port is not initialized or the
-	descriptor <fd> is invalid, or if the device does not return an expected
-	response.
-*/
 int msr_get_co(int fd)
 {
 	char b[2] = {0};
@@ -511,20 +326,6 @@ int msr_get_co(int fd)
 	return LIBMSR_ERR_DEVICE;
 }
 
-
-/*
- * Set coercivity to high
- *
- * This function issues an MSR_CMD_SETCO_HI command to switch the
- * device to high coercivity mode. It is unclear if this affects both
- * the read and write operations, though presumably it only affects
- * writes by channeling more power to the write head so that it can
- * update high-coercivity media.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the device does not
- * return the MSR_STS_OK status code.
- */
 int msr_set_hi_co (int fd)
 {
 	char b[2] = {0};
@@ -549,19 +350,6 @@ int msr_set_hi_co (int fd)
 	return LIBMSR_ERR_DEVICE;
 }
 
-/*
- * Set coercivity to low
- *
- * This function issues an MSR_CMD_SETCO_HI command to switch the
- * device to high coercivity mode. It is unclear if this affects both
- * the read and write operations, though presumably it only affects
- * writes by channeling less power to the write head so that it can
- * update high-coercivity media.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the device does not
- * return the MSR_STS_OK status code.
- */
 int msr_set_lo_co (int fd)
 {
 	char b[2] = {0};
@@ -586,16 +374,6 @@ int msr_set_lo_co (int fd)
 	return LIBMSR_ERR_DEVICE;
 }
 
-/*
- * Reset the device
- *
- * This function issues an MSR_CMD_RESET command to reset the device.
- * This command does not return a status code. The routine pauses
- * for a tenth of a second to wait for the reset to complete.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_reset (int fd)
 {
 	struct timespec pause = { .tv_sec = 0, .tv_nsec = 100000000};
@@ -607,20 +385,6 @@ int msr_reset (int fd)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Read an ISO formatted card
- *
- * This routine issues an MSR_CMD_READ command to the device to
- * read an ISO formatted magstripe card. After the command is
- * issued, the user must swipe a card through the MSR206. The
- * function will block until the card is read and the MSR206 is
- * ready to return data from the tracks. The caller must allocate
- * a pointer to an msr_tracks_t structure and supply a pointer
- * to this structure via the <tracks> argument.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_iso_read(int fd, msr_tracks_t * tracks)
 {
 	int r, i;
@@ -656,30 +420,6 @@ int msr_iso_read(int fd, msr_tracks_t * tracks)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Erase one or more tracks on a card
- *
- * This routine issues an MSR_CMD_ERASE command to the device to
- * read erase a magstripe card. After the command is issued,
- * the user must swipe a card through the MSR206. The function
- * will block until the device returns a response code indicating
- * that the erase operation completed successfully.
- *
- * This function can erase various combinations of tracks, or erase
- * all of them, depending on the <tracks> value specified:
- *
- * MSR_ERASE_TK1	erase track 1 only
- * MSR_ERASE_TK2	erase track 2 only
- * MSR_ERASE_TK3	erase track 3 only
- * MSR_ERASE_TK1_TK2	erase tracks 1 and 2
- * MSR_ERASE_TK1_TK3	erase tracks 1 and 3
- * MSR_ERASE_TK2_TK3	erase tracks 2 and 3
- * MSR_ERASE_ALL	erase all tracks
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the device does not
- * return an MSR_STS_ERASE_OK status code.
- */
 int msr_erase (int fd, uint8_t tracks)
 {
 	uint8_t b[2];
@@ -705,25 +445,6 @@ int msr_erase (int fd, uint8_t tracks)
 	return LIBMSR_ERR_DEVICE;
 }
 
-/*
- * Write an ISO formatted card
- *
- * This routine issues an MSR_CMD_WRITE command to the device to
- * write to an ISO formatted magstripe card. The card does not need
- * to be erased (any existing data is overwritten). The caller must
- * allocate an msr_tracks_t structure and populate it with the data
- * to be written to the card, then supply a pointer to this structure
- * via the <tracks> argument. The data in the tracks must meet the
- * ISO requirements.
- *
- * After the write command is issued and the track data is written
- * to the device, the function will block until a status code is
- * read from the device.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the MST_STS_OK status
- * code is not returned.
- */
 int msr_iso_write(int fd, msr_tracks_t * tracks)
 {
 	int i;
@@ -756,25 +477,6 @@ int msr_iso_write(int fd, msr_tracks_t * tracks)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Read raw data from a card
- *
- * This routine issues an MSR_CMD_RAW_READ command to the device
- * to read arbitrary data from 3 tracks on a magstripe card. After
- * the command is issued, the user must swipe a card through the MSR206.
- * The function will block until the card is read and the MSR206 is
- * ready to return data from the tracks. The caller must allocate
- * a pointer to an msr_tracks_t structure and supply a pointer
- * to this structure via the <tracks> argument.
- *
- * Unlike the msr_iso_read() function, this routine bypasses the
- * MSR206's internal data parser and returns data representing the
- * raw bit pattern on the magnetic media. It is up to the caller to
- * decode this data into a useful form.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_raw_read(int fd, msr_tracks_t * tracks)
 {
 	int r, i;
@@ -808,29 +510,6 @@ int msr_raw_read(int fd, msr_tracks_t * tracks)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Write raw track data to a card
- *
- * This routine issues an MSR_CMD_RAW_WRITE command to the device to
- * write arbitrary data to a magstripe card. The card does not need
- * to be erased (any existing data is overwritten). The caller must
- * allocate an msr_tracks_t structure and populate it with the data
- * to be written to the card, then supply a pointer to this structure
- * via the <tracks> argument. The data can be in any format.
- *
- * After the write command is issued and the track data is written
- * to the device, the function will block until a status code is
- * read from the device.
- *
- * Unlike the msr_iso_write() routine, this function bypasses the
- * MSR206's internal parser and writes the bit pattern represented
- * by the track data unmodified to the card. It's up to the caller
- * to format the data in a meaningful way.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the MST_STS_OK status
- * code is not returned.
- */
 int msr_raw_write(int fd, msr_tracks_t * tracks)
 {
 	int i;
@@ -864,19 +543,6 @@ int msr_raw_write(int fd, msr_tracks_t * tracks)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Initialize the MSR206
- *
- * This function issues a reset command to the MSR206 device, and
- * then performs a communications diagnostic test. If the test
- * succeeds, another reset is issued to ready the device for a
- * read or write operation. Typically, msr_init() must be called
- * before any significant operation, including reading and writing
- * cards.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid.
- */
 int msr_init(int fd)
 {
 	msr_reset (fd);
@@ -890,19 +556,6 @@ int msr_init(int fd)
 	return LIBMSR_ERR_OK;
 }
 
-/*
- * Set BPI value
- *
- * This function issues an MSR_CMD_SETBPI command to set the bits per
- * inch configuration for track 2. (This command has no effect for
- * other tracks.) It is assumed that this command only has meaning
- * when writing data. The MSR206 supports writing data on track 2
- * with <bpi> values. Valid options are either 75 or 210 bits per inch.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the MSR_STS_OK status
- * is not returned.
- */
 int msr_set_bpi (int fd, uint8_t bpi)
 {
 	uint8_t b[2] = {0};
@@ -925,19 +578,6 @@ int msr_set_bpi (int fd, uint8_t bpi)
 	return LIBMSR_ERR_DEVICE;
 }
 
-/*
- * Set BPC value
- *
- * This function issues an MSR_CMD_SETBPC command to bits per character
- * configuration for all 3 tracks. (This command has no effect for
- * other tracks.) It is assumed that this command only has meaning
- * when using ISO read or write commands. The MSR206 supports writing
- * data with <bpc> values from 5 to 8.
- *
- * This function will fail if the serial port is not initialized
- * or the descriptor <fd> is invalid, or if the MSR_STS_OK status
- * is not returned.
- */
 int msr_set_bpc (int fd, uint8_t bpc1, uint8_t bpc2, uint8_t bpc3)
 {
 	uint8_t b[2] = {0};
