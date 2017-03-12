@@ -15,6 +15,9 @@ $ git clone https://github.com/woodruffw/libmsr && cd libmsr
 $ make && sudo make install
 ```
 
+Doxygen generated documentation can be found
+[here](https://yossarian.net/docs/libmsr/).
+
 For functional examples, see the
 [msr-utils](https://github.com/woodruffw/msr-utils) repository.
 
