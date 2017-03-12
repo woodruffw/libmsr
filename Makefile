@@ -22,6 +22,10 @@ $(LIB): $(LIBOBJS)
 .c.o:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+doc:
+	VERS=$(shell git describe --tags 2>/dev/null || git rev-parse --short HEAD) \
+	doxygen Doxyfile
+
 install: $(LIB)
 	install -m644 -D $(LIB) $(PREFIX)/lib
 	install -m644 -D libmsr.h $(PREFIX)/include
