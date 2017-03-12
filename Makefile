@@ -23,7 +23,8 @@ $(LIB): $(LIBOBJS)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 doc:
-	VERS=$(shell git describe --tags 2>/dev/null || git rev-parse --short HEAD) \
+	VERS=$(shell git describe --tags --dirty --always 2>/dev/null \
+			|| git rev-parse --short HEAD) \
 	doxygen Doxyfile
 
 install: $(LIB)
@@ -36,3 +37,5 @@ uninstall:
 
 clean:
 	rm -rf *.o *~ $(LIB)
+	rm -rf html/
+	rm -rf man/
