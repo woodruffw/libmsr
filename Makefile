@@ -5,16 +5,14 @@ PREFIX = /usr
 CFLAGS = -Wall -g -fPIC -std=c99 -pedantic -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -L. -lmsr
 
-DEBUG ?= 0
-ifeq ($(DEBUG), 1)
-	CFLAGS += -DMSR_DEBUG -DSERIAL_DEBUG
-endif
-
 LIB = libmsr.a
 LIBSRCS = libmsr.c serialio.c msr206.c
 LIBOBJS = $(LIBSRCS:.c=.o)
 
 all: $(LIB)
+
+debug: CFLAGS += -DDEBUG -g
+debug: all
 
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)

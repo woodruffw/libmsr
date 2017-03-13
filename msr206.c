@@ -23,10 +23,10 @@ int msr_cmd (int fd, uint8_t c)
 int msr_zeros (int fd, msr_lz_t *lz)
 {
 	msr_cmd (fd, MSR_CMD_CLZ);
-	msr_serial_read (fd, &lz, sizeof(msr_lz_t));
+	msr_serial_read (fd, lz, sizeof(msr_lz_t));
 
-#ifdef MSR_DEBUG
-	printf("zero13: %d zero: %d\n", lz.msr_lz_tk1_3, lz.msr_lz_tk2);
+#ifdef DEBUG
+	printf("zero13: %d zero: %d\n", lz->msr_lz_tk1_3, lz->msr_lz_tk2);
 #endif
 
 	return LIBMSR_ERR_OK;
@@ -69,7 +69,7 @@ static int getend (int fd)
 	msr_serial_read (fd, &m, sizeof(m));
 
 	if (m.msr_sts != MSR_STS_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf ("read returned error status: 0x%x\n", m.msr_sts);
 #endif
 		return LIBMSR_ERR_DEVICE;
@@ -86,7 +86,7 @@ int msr_commtest (int fd)
 	r = msr_cmd (fd, MSR_CMD_DIAG_COMM);
 
 	if (r == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
    		err(1, "Commtest write failed");
 #endif
    		return LIBMSR_ERR_SERIAL;
@@ -107,7 +107,7 @@ int msr_commtest (int fd)
 	}
 
 	if (buf[0] != MSR_STS_COMM_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf("Communications test failure\n");
 #endif
 		return LIBMSR_ERR_DEVICE;
@@ -128,7 +128,7 @@ int msr_fwrev (int fd, uint8_t *buf)
 	msr_serial_read (fd, buf, 8);
 	buf[8] = '\0';
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf ("Firmware Version: %s\n", buf);
 #endif
 
@@ -150,7 +150,7 @@ int msr_model (int fd, uint8_t *buf)
 
 	snprintf((char *) buf, 10, "MSR-206-%c", m.msr_model);
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("%s\n", buf);
 #endif
 
@@ -269,7 +269,7 @@ int msr_sensor_test (int fd)
 
 	msr_cmd (fd, MSR_CMD_DIAG_SENSOR);
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("Attempting sensor test -- please slide a card...\n");
 #endif
 
@@ -279,7 +279,7 @@ int msr_sensor_test (int fd)
 		return LIBMSR_ERR_OK;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("It appears that the sensor did not sense a magnetic card.\n");
 #endif
 
@@ -298,7 +298,7 @@ int msr_ram_test (int fd)
  		return LIBMSR_ERR_OK;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("It appears that the RAM test failed\n");
 	printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
 #endif
@@ -318,7 +318,7 @@ int msr_get_co(int fd)
 		return b[1];
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("It appears that the reader did not return its coercivity.\n");
 	printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
 #endif
@@ -336,13 +336,13 @@ int msr_set_hi_co (int fd)
 	msr_serial_read (fd, &b, 2);
 
 	if (b[0] == MSR_ESC && b[1] == MSR_STS_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf("Hi-Co mode: enabled.\n");
 #endif
 		return LIBMSR_ERR_OK;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("It appears that the reader did not switch to Hi-Co mode.\n");
 	printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
 #endif
@@ -360,13 +360,13 @@ int msr_set_lo_co (int fd)
 	msr_serial_read (fd, &b, 2);
 
 	if (b[0] == MSR_ESC && b[1] == MSR_STS_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf("Lo-Co mode: enabled.\n");
 #endif
 		return LIBMSR_ERR_OK;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf("It appears that the reader did not switch to Lo-Co mode.\n");
 	printf("Got 0x%02x 0x%02x in response.\n", b[0], b[1]);
 #endif
@@ -392,14 +392,14 @@ int msr_iso_read(int fd, msr_tracks_t * tracks)
 	r = msr_cmd (fd, MSR_CMD_READ);
 
 	if (r == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		err(1, "Command write failed");
 #endif
 	}
 
     /* Wait for start delimiter. */
 	if (getstart (fd) == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		err(1, "get start delimiter failed");
 #endif
 	}
@@ -411,7 +411,7 @@ int msr_iso_read(int fd, msr_tracks_t * tracks)
 
     /* Wait for end delimiter. */
 	if (getend (fd) == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		warnx("read failed");
 #endif
 		return LIBMSR_ERR_SERIAL;
@@ -428,7 +428,7 @@ int msr_erase (int fd, uint8_t tracks)
 	msr_serial_write (fd, &tracks, 1);
 
 	if (msr_serial_read (fd, b, 2) == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		err(1, "read erase response failed");
 #endif
 	}
@@ -437,7 +437,7 @@ int msr_erase (int fd, uint8_t tracks)
 		return LIBMSR_ERR_OK;
 	}
 	else {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf ("%x %x\n", b[0], b[1]);
 #endif
 	}
@@ -468,7 +468,7 @@ int msr_iso_write(int fd, msr_tracks_t * tracks)
 	msr_serial_read(fd, buf, 2);
 
 	if (buf[1] != MSR_STS_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		warnx("iso write failed: 0x%02x", buf[1]);
 #endif
 		return LIBMSR_ERR_DEVICE;
@@ -484,13 +484,13 @@ int msr_raw_read(int fd, msr_tracks_t * tracks)
 	r = msr_cmd(fd, MSR_CMD_RAW_READ);
 
 	if (r == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		err(1, "Command write failed");
 #endif
 	}
 
 	if (getstart(fd) == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		err(1, "get start delimiter failed");
 #endif
 	}
@@ -501,7 +501,7 @@ int msr_raw_read(int fd, msr_tracks_t * tracks)
 	}
 
 	if (getend(fd) == -1) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		err(1, "read failed");
 #endif
 		return LIBMSR_ERR_DEVICE;
@@ -534,7 +534,7 @@ int msr_raw_write(int fd, msr_tracks_t * tracks)
 	msr_serial_read(fd, buf, 2);
 
 	if (buf[1] != MSR_STS_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		warnx("raw write failed: 0x%02x", buf[1]);
 #endif
 		return LIBMSR_ERR_DEVICE;
@@ -565,13 +565,13 @@ int msr_set_bpi (int fd, uint8_t bpi)
 	msr_serial_read (fd, &b, 2);
 
 	if (b[0] == MSR_ESC && b[1] == MSR_STS_OK) {
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf("Set bits per inch to: %d\n", bpi);
 #endif
 		return LIBMSR_ERR_OK;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	warnx ("Set bpi failed\n");
 #endif
 
@@ -593,14 +593,14 @@ int msr_set_bpc (int fd, uint8_t bpc1, uint8_t bpc2, uint8_t bpc3)
 	msr_serial_read (fd, &b, 2);
 	if (b[0] == MSR_ESC && b[1] == MSR_STS_OK) {
 		msr_serial_read (fd, &bpc, sizeof(bpc));
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf ("Set bpc... %d %d %d\n", bpc.msr_bpctk1,
 		    bpc.msr_bpctk2, bpc.msr_bpctk3);
 #endif
 		return LIBMSR_ERR_OK;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	warnx("failed to set bpc");
 #endif
 

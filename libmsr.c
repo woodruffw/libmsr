@@ -106,7 +106,7 @@ int msr_decode(uint8_t * inbuf, uint8_t inlen,
 			/* Don't overflow output buffer */
 			if (x == *outlen)
 				break;
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 			printf ("%c", byte);
 #endif
 			ch = 0;
@@ -115,7 +115,7 @@ int msr_decode(uint8_t * inbuf, uint8_t inlen,
 			ch++;
 	}
 
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 	printf ("\n");
 #endif
 

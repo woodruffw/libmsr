@@ -24,7 +24,7 @@ int msr_serial_readchar (int fd, uint8_t * c)
 
 	if (r != -1) {
 		*c = b;
-#ifdef MSR_DEBUG
+#ifdef DEBUG
 		printf ("[0x%x]\n", b);
 #endif
 	}
@@ -39,17 +39,17 @@ int msr_serial_read (int fd, void * buf, size_t len)
 
 	p = buf;
 
-#ifdef SERIAL_DEBUG
+#ifdef DEBUG
 	printf("[RX %.3lu]", len);
 #endif
 	for (i = 0; i < len; i++) {
 		msr_serial_readchar (fd, &b);
-#ifdef SERIAL_DEBUG
+#ifdef DEBUG
 		printf(" %.2x", b);
 #endif
 		p[i] = b;
 	}
-#ifdef SERIAL_DEBUG
+#ifdef DEBUG
 	printf("\n");
 #endif
 
