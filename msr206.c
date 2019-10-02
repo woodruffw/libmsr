@@ -5,6 +5,10 @@
 #include <strings.h>
 #include <err.h>
 #include <string.h>
+#include <math.h>
+#include <ctype.h>
+#include <signal.h>
+#include <stdarg.h>
 
 #include "libmsr.h"
 
@@ -513,7 +517,7 @@ int msr_raw_read(int fd, msr_tracks_t * tracks)
 int msr_raw_write(int fd, msr_tracks_t * tracks)
 {
 	int i;
-	uint8_t buf[4];
+	uint8_t buf[6];
 
 	msr_cmd(fd, MSR_CMD_RAW_WRITE);
 	msr_cmd(fd, MSR_RW_START);
@@ -529,6 +533,7 @@ int msr_raw_write(int fd, msr_tracks_t * tracks)
 
 	buf[0] = MSR_RW_END;
 	buf[1] = MSR_FS;
+	
 	msr_serial_write (fd, buf, 2);
 
 	msr_serial_read(fd, buf, 2);
@@ -601,7 +606,7 @@ int msr_set_bpc (int fd, uint8_t bpc1, uint8_t bpc2, uint8_t bpc3)
 	}
 
 #ifdef DEBUG
-	warnx("failed to set bpc");
+	warnx("unable to set bpc");
 #endif
 
 	return LIBMSR_ERR_DEVICE;
