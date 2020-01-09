@@ -1,6 +1,8 @@
 libmsr
 ======
 
+[![Build Status](https://img.shields.io/github/workflow/status/woodruffw/libmsr/CI/master)](https://github.com/woodruffw/libmsr/actions?query=workflow%3ACI)
+
 libmsr is a library for interacting with magnetic stripe reader/writers.
 
 It's a fork of Jacob Appelbaum's [libmsr](https://github.com/ioerror/libmsr),
