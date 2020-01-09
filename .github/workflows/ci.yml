@@ -18,7 +18,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: install dependencies
-        run: sudo apt install -y gcc
       - name: build
         run: CC=${{ matrix.compiler }} make
